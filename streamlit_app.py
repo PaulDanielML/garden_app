@@ -12,7 +12,6 @@ from utils import (
     hex_to_rgb_str,
     make_colored_square,
     get_json_files,
-    get_formatted_name,
     show_map,
     back_callback,
     add_veggie_callback,
@@ -50,7 +49,7 @@ def show_legend(base_layout: Dict, obj=None):
 
 
 def add_new_veggie(base_layout: Dict):
-    st.session_state.show_add_button = False
+    # st.session_state.show_add_button = False
     make_centered_title("Add New Veggie", 20, st.sidebar)
     st.sidebar.info(
         "To add a new plant, enter a name, select which date is was planted and pick a color. Then draw it on the \
@@ -69,8 +68,6 @@ def add_new_veggie(base_layout: Dict):
     stroke_width = st.sidebar.slider("Border width: ", 1, 15, 4)
     # stroke_color = st.sidebar.color_picker("Border color: ")
 
-    # col_1, col_2 = st.sidebar.columns(2)
-    # add_button = col_1.button("Save Veggie")
     st.sidebar.button("Back", on_click=back_callback)
     background_image = Image.open("img/background.png")
     canvas_result = st_canvas(
@@ -80,7 +77,7 @@ def add_new_veggie(base_layout: Dict):
         # background_color=bg_color,
         background_image=background_image,
         # background_image=Image.open("img/canvas_background.jpg"),
-        # update_streamlit=False,
+        update_streamlit=False,
         height=1000,
         # height=800
         width=1600,
@@ -88,7 +85,7 @@ def add_new_veggie(base_layout: Dict):
         initial_drawing=base_layout,
         # initial_drawing=base_layout["geometry_data"],
         # point_display_radius=point_display_radius if drawing_mode == "point" else 0,
-        key="canvas",
+        # key="canvas",
     )
     loaded_length = len(base_layout["objects"])
 
@@ -122,25 +119,20 @@ def layout():
     # st.sidebar.markdown("***")
     if "layout_mode" not in st.session_state:
         st.session_state.layout_mode = "legend"
-    if "show_add_button" not in st.session_state:
-        st.session_state.show_add_button = True
     to_load = f"data/{get_json_files()[-1]}"
     with open(to_load, "r") as f:
         base_layout = json.load(f)
 
     legend = st.sidebar.container()
-    # add_veggie = False
-    if st.session_state.show_add_button:
-        st.sidebar.button("Add New Veggie", on_click=add_veggie_callback)
-        # add_veggie = st.sidebar.button("Add New Veggie", on_click=add_veggie_callback)
 
     if st.session_state.layout_mode == "add_veggie":
-        # if add_veggie or st.session_state.layout_mode == "add_veggie":
         add_new_veggie(base_layout)
     else:
         make_centered_title("Garden Layout", 30)
         st.image("img/current_layout.png")
         show_legend(base_layout, legend)
+        st.sidebar.info("Click here to add a new vegetable.")
+        st.sidebar.button("Add New Veggie", on_click=add_veggie_callback)
 
     st.sidebar.markdown("***")
     make_centered_title("Create new / modify layout", 20, st.sidebar)

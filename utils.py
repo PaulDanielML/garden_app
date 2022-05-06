@@ -20,12 +20,10 @@ def save_layout_as_image(image_data: np.ndarray, file_name: str = "current_layou
 
 def add_veggie_callback():
     st.session_state.layout_mode = "add_veggie"
-    st.session_state.show_add_button = False
 
 
 def back_callback():
     st.session_state.layout_mode = "legend"
-    st.session_state.show_add_button = True
 
 
 def show_map(coordinates: Tuple):
