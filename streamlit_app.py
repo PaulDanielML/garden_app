@@ -77,7 +77,7 @@ def add_new_veggie(base_layout: Dict):
         # background_color=bg_color,
         background_image=background_image,
         # background_image=Image.open("img/canvas_background.jpg"),
-        update_streamlit=False,
+        # update_streamlit=False,
         height=1000,
         # height=800
         width=1600,
@@ -85,7 +85,7 @@ def add_new_veggie(base_layout: Dict):
         initial_drawing=base_layout,
         # initial_drawing=base_layout["geometry_data"],
         # point_display_radius=point_display_radius if drawing_mode == "point" else 0,
-        # key="canvas",
+        key="canvas",
     )
     loaded_length = len(base_layout["objects"])
 
@@ -101,12 +101,12 @@ def add_new_veggie(base_layout: Dict):
                     obj["date"] = planted_date.strftime("%Y%m%d")
                     obj["color"] = fill_color
 
-            file_name = f'data/{datetime.datetime.now().strftime("%Y-%m-%d - %H:%M:%S")}.json'
-            objects_to_save = new_objects + base_layout["objects"]
-            to_save = canvas_result.json_data
-            to_save["objects"] = objects_to_save
-            with open(file_name, "w") as f:
-                json.dump(to_save, f, indent=4)
+                file_name = f'data/{datetime.datetime.now().strftime("%Y-%m-%d - %H:%M:%S")}.json'
+                objects_to_save = new_objects + base_layout["objects"]
+                to_save = canvas_result.json_data
+                to_save["objects"] = objects_to_save
+                with open(file_name, "w") as f:
+                    json.dump(to_save, f, indent=4)
 
             if canvas_result.image_data is not None:
                 save_layout_as_image(canvas_result.image_data)
