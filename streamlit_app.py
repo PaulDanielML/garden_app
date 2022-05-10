@@ -161,6 +161,10 @@ def layout():
 
     st.sidebar.markdown("***")
 
+    show_ss = st.sidebar.button("Show session state")
+    if show_ss:
+        st.write(st.session_state)
+
 
 def map_page():
     make_centered_title("Map", 30)
