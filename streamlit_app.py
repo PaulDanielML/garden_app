@@ -50,27 +50,32 @@ def show_legend(base_layout: Dict, obj=None):
 
 def add_new_veggie(base_layout: Dict):
     # st.session_state.show_add_button = False
+    make_centered_title("Add New Veggetable", 30)
     make_centered_title("Add New Veggie", 20, st.sidebar)
     st.sidebar.info(
         "To add a new plant, enter a name, select which date is was planted and pick a color. Then draw it on the \
             right and when you're done, click on 'Save Veggie'."
     )
-    form = st.sidebar.form("new_veggie_form")
-    veggie_name = form.text_input("Name")
-    planted_date = form.date_input("Date planted", value=datetime.date.today())
-    fill_color = form.color_picker("Fill color: ", value="#0E28D0")
-    add_button = form.form_submit_button("Save Veggie")
+    st.button("Back", on_click=back_callback, key="back_main_1")
+    form = st.form("new_veggie_form")
+    col_1, col_2, col_3 = form.columns([2,2,2])
+    veggie_name = col_1.text_input("Name")
+    planted_date = col_1.date_input("Date planted", value=datetime.date.today())
+    fill_color = col_1.color_picker("Fill color: ", value="#0E28D0")
+    add_button = col_1.form_submit_button("Save Veggie")
 
     # drawing_mode_ph = st.sidebar.empty()
-    drawing_mode = st.sidebar.selectbox(
+    drawing_mode = col_3.selectbox(
         "Tool:", ("rect", "freedraw", "line", "transform"), format_func=drawing_mode_format_func
     )
-    stroke_width = st.sidebar.slider("Border width: ", 1, 15, 4)
+    stroke_width = col_3.slider("Border width: ", 1, 15, 4)
     # stroke_color = st.sidebar.color_picker("Border color: ")
 
     st.sidebar.button("Back", on_click=back_callback)
+    st.button("Back", on_click=back_callback, key="back_main_2")
     background_image = Image.open("img/background.png")
-    canvas_result = st_canvas(
+    with form:
+        canvas_result = st_canvas(
         fill_color=hex_to_rgb_str(fill_color),
         stroke_width=stroke_width,
         # stroke_color=stroke_color,
@@ -91,7 +96,7 @@ def add_new_veggie(base_layout: Dict):
 
     if add_button:
         if veggie_name == "":
-            st.sidebar.error("Please enter a name.")
+            col_1.error("Please enter a name.")
         else:
             new_objects = canvas_result.json_data["objects"][loaded_length:]
 
