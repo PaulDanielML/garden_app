@@ -163,6 +163,10 @@ def layout():
 
     show_ss = st.sidebar.button("Show session state")
     if show_ss:
+        import os
+        st.write(os.listdir(os.getcwd()))
+        st.write(os.listdir("data"))
+        st.write(os.listdir("img"))
         st.write(st.session_state)
 
 
