@@ -10,7 +10,7 @@
             "top": 1,
             "width": 59,
             "height": 476,
-            "fill": "rgba(80, 77, 77, 0.5)",
+            "fill": "#463A3A",
             "stroke": "black",
             "strokeWidth": 4,
             "strokeDashArray": null,
@@ -34,9 +34,7 @@
             "skewX": 0,
             "skewY": 0,
             "rx": 0,
-            "ry": 0,
-            "name": "Base Layout",
-            "date": "20220504"
+            "ry": 0
         },
         {
             "type": "rect",
@@ -47,7 +45,7 @@
             "top": 1,
             "width": 100,
             "height": 477,
-            "fill": "rgba(80, 77, 77, 0.5)",
+            "fill": "#463A3A",
             "stroke": "black",
             "strokeWidth": 4,
             "strokeDashArray": null,
@@ -71,9 +69,7 @@
             "skewX": 0,
             "skewY": 0,
             "rx": 0,
-            "ry": 0,
-            "name": "Base Layout",
-            "date": "20220504"
+            "ry": 0
         },
         {
             "type": "rect",
@@ -84,7 +80,7 @@
             "top": 1,
             "width": 102,
             "height": 385,
-            "fill": "rgba(80, 77, 77, 0.5)",
+            "fill": "#463A3A",
             "stroke": "black",
             "strokeWidth": 4,
             "strokeDashArray": null,
@@ -108,9 +104,7 @@
             "skewX": 0,
             "skewY": 0,
             "rx": 0,
-            "ry": 0,
-            "name": "Base Layout",
-            "date": "20220504"
+            "ry": 0
         },
         {
             "type": "rect",
@@ -121,7 +115,7 @@
             "top": 0,
             "width": 130,
             "height": 405,
-            "fill": "rgba(80, 77, 77, 0.5)",
+            "fill": "#463A3A",
             "stroke": "black",
             "strokeWidth": 4,
             "strokeDashArray": null,
@@ -145,9 +139,7 @@
             "skewX": 0,
             "skewY": 0,
             "rx": 0,
-            "ry": 0,
-            "name": "Base Layout",
-            "date": "20220504"
+            "ry": 0
         },
         {
             "type": "rect",
@@ -158,7 +150,7 @@
             "top": 0.19,
             "width": 122,
             "height": 430,
-            "fill": "rgba(43, 41, 41, 0.5)",
+            "fill": "#59595C",
             "stroke": "black",
             "strokeWidth": 4,
             "strokeDashArray": null,
@@ -182,9 +174,7 @@
             "skewX": 0,
             "skewY": 0,
             "rx": 0,
-            "ry": 0,
-            "name": "Base Layout",
-            "date": "20220504"
+            "ry": 0
         }
     ]
 }
