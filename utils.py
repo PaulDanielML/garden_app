@@ -3,6 +3,7 @@ from typing import Dict, Tuple
 import streamlit as st
 from streamlit_folium import folium_static
 import folium
+from folium.map import Popup
 import numpy as np
 from PIL import Image
 import datetime
@@ -20,8 +21,8 @@ def save_layout_as_image(image_data: np.ndarray, file_name: str = "current_layou
     out.save(f"img/{file_name}")
 
 
-def save_json_with_current_time(data, name: str):
-    file_name = f'data/{datetime.datetime.now().strftime("%Y-%m-%d - %H:%M:%S")} - {name}.json'
+def save_json_with_current_time(data):
+    file_name = f'data/{datetime.datetime.now().strftime("%Y-%m-%d - %H:%M:%S")}.json'
     with open(file_name, "w") as f:
         json.dump(data, f, indent=4)
 
@@ -39,17 +40,21 @@ def back_callback():
 
 
 def show_map(coordinates: Tuple):
-    my_map = folium.Map(location=coordinates, zoom_start=15)
+    my_map = folium.Map(location=[55.735579147828695, 12.343732386753675], zoom_start=15)
 
-    google_satellite_hybrid = folium.TileLayer(
-        tiles="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+    google_satellite = folium.TileLayer(
+        tiles="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+        # tiles="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
         attr="Google",
         name="Google Satellite",
         overlay=True,
         control=True,
     )
-    google_satellite_hybrid.add_to(my_map)
-    folium.Marker(coordinates, popup="Our Garden").add_to(my_map)
+    google_satellite.add_to(my_map)
+    folium.Marker(coordinates, popup=Popup("Our Garden", show=True)).add_to(my_map)
+    folium.Marker(
+        [55.729944803981034, 12.358204918714536], popup=Popup("Ballerup St.", show=True)
+    ).add_to(my_map)
     folium_static(my_map, width=1200, height=800)
 
 
@@ -59,12 +64,12 @@ def get_formatted_name(name: str, line_length: int = 15):
     return "\n".join(name[i : i + line_length] for i in range(0, len(name), line_length))
 
 
-def get_json_files(name: str):
-    return sorted([f for f in os.listdir("data") if f.endswith(".json") and name in f])
+def get_json_files():
+    return sorted([f for f in os.listdir("data") if f.endswith(".json")])
 
 
-def get_latest_json(name: str):
-    to_load = f"data/{get_json_files(name)[-1]}"
+def get_latest_json():
+    to_load = f"data/{get_json_files()[-1]}"
     with open(to_load, "r") as f:
         latest = json.load(f)
 
@@ -98,7 +103,7 @@ def make_colored_square(hex_color: str, size: int = 30, obj=None):
 
 
 def update_mapping(layout: Dict):
-    current_mapping = get_latest_json("mapping")
+    current_mapping = get_latest_json()["mapping"]
 
     new_colors = {i["fill"] for i in layout["objects"]}
     new_mapping = [i for i in current_mapping if i["color"] in new_colors]
@@ -115,9 +120,11 @@ def update_mapping(layout: Dict):
     # with open("data/mapping.json", "w") as f:
     #     json.dump(new_mapping, f, indent=4)
 
-    save_json_with_current_time(new_mapping, "mapping")
+    # save_json_with_current_time(new_mapping, "mapping")
 
     st.session_state.mapping = new_mapping
+
+    return new_mapping
 
 
 def v_spacer(height, obj=None, sb=False) -> None:

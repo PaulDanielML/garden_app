@@ -4,6 +4,7 @@ from PIL import Image
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 import datetime
+import json
 from utils import (
     make_centered_title,
     drawing_mode_format_func,
@@ -16,19 +17,29 @@ from utils import (
     save_json_with_current_time,
     get_latest_json,
     update_mapping,
+    get_json_files,
 )
 
 
 def update_state(canvas_result):
-    save_json_with_current_time(canvas_result.json_data, "geometry")
-    update_mapping(canvas_result.json_data)
+    to_save = {}
+    to_save["canvas_data"] = canvas_result.json_data
+    to_save["mapping"] = update_mapping(canvas_result.json_data)
+
+    save_json_with_current_time(to_save)
+
+    st.session_state.mapping = to_save["mapping"]
+    st.session_state.base_layout = to_save["canvas_data"]
+
     if canvas_result.image_data is not None:
         save_layout_as_image(canvas_result.image_data)
     back_callback()
     st.experimental_rerun()
 
 
-def edit(base_layout: Dict):
+def edit():
+    base_layout = st.session_state.base_layout
+
     make_centered_title("Edit current layout", 30)
     make_centered_title("Edit layout", 20, st.sidebar)
     st.sidebar.info(
@@ -73,10 +84,10 @@ def show_legend(obj=None):
     col_1, col_2, col_3 = local_obj.columns([2, 6, 4])
 
     df = pd.json_normalize(st.session_state.mapping)
-    df.query("name != 'Base Layout'", inplace=True)
+    # df.query("name != 'Base Layout'", inplace=True)
 
-    if df.empty:
-        return
+    # if df.empty:
+    #     return
 
     col_1.subheader("Color")
     col_2.subheader("Name")
@@ -90,10 +101,13 @@ def show_legend(obj=None):
         col_1, col_2, col_3 = local_obj.columns([2, 6, 4])
         make_colored_square(row.color, obj=col_1)
         col_2.write(row.name)
-        col_3.write(datetime.datetime.strptime(row.date, "%Y%m%d").date())
+        col_3.write(
+            datetime.datetime.strptime(row.date, "%Y%m%d").date() if row.date != "" else row.date
+        )
 
 
-def add_new_veggie(base_layout: Dict):
+def add_new_veggie():
+    base_layout = st.session_state.base_layout
     make_centered_title("Add New Veggetable", 30)
     make_centered_title("Add New Veggie", 20, st.sidebar)
     st.sidebar.info(
@@ -109,7 +123,9 @@ def add_new_veggie(base_layout: Dict):
     fill_color = col_1.color_picker("Fill color: ", value="#0E28D0", key="new_veggie_color")
 
     drawing_mode = col_3.selectbox(
-        "Tool:", ("rect", "freedraw", "line"), format_func=drawing_mode_format_func
+        "Tool:",
+        ("rect", "freedraw", "line", "circle", "point"),
+        format_func=drawing_mode_format_func,
     )
     stroke_width = col_3.slider("Border width: ", 1, 15, 4)
     form = st.form("new_veggie_form")
@@ -145,39 +161,28 @@ def layout():
         st.session_state.background_img = Image.open("img/background.png")
 
     if "mapping" not in st.session_state:
-        st.session_state.mapping = get_latest_json("mapping")
+        data = get_latest_json()
+        st.session_state.mapping = data["mapping"]
+        st.session_state.base_layout = data["canvas_data"]
 
-    base_layout = get_latest_json("geometry")
+    # base_layout = get_latest_json()
+    new_veg_ph = st.sidebar.container()
 
     legend = st.sidebar.container()
 
     if st.session_state.layout_mode == "add_veggie":
-        add_new_veggie(base_layout)
+        add_new_veggie()
     elif st.session_state.layout_mode == "edit":
-        edit(base_layout)
+        edit()
     else:
         make_centered_title("Garden Layout", 30)
         st.image("img/current_layout.png")
         show_legend(legend)
 
-        st.sidebar.button("Edit", on_click=edit_callback)
-
-        st.sidebar.markdown("***")
-        st.sidebar.info("Click here to add a new vegetable.")
-        st.sidebar.button("Add New Veggie", on_click=add_veggie_callback)
-
-    st.sidebar.markdown("***")
-    make_centered_title("Create new / modify layout", 20, st.sidebar)
-    st.sidebar.info("Here you can change the base layout (paths etc.).")
-    side_col_1, side_col_2 = st.sidebar.columns(2)
-    new_base = side_col_1.button("Create new layout")
-    modify_base = side_col_2.button("Modify current layout")
-
-    if new_base:
-        st.sidebar.warning("Not available yet.")
-
-    if modify_base:
-        st.sidebar.warning("Not available yet.")
+        legend.button("Edit", on_click=edit_callback)
+        new_veg_ph.info("Click here to add a new vegetable.")
+        new_veg_ph.button("Add New Veggie", on_click=add_veggie_callback)
+        new_veg_ph.markdown("***")
 
     st.sidebar.markdown("***")
 
@@ -186,9 +191,15 @@ def layout():
         import os
 
         st.write(st.session_state)
-        st.write(os.listdir(os.getcwd()))
+        # st.write(os.listdir(os.getcwd()))
         st.write(os.listdir("data"))
-        st.write(os.listdir("img"))
+        # st.write(os.listdir("img"))
+
+    st.download_button(
+        "Download Layout Data",
+        data=json.dumps(get_latest_json(), indent=4),
+        file_name=get_json_files()[-1],
+    )
 
 
 def map_page():
