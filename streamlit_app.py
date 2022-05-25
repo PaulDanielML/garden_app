@@ -1,3 +1,4 @@
+from re import I
 from typing import Dict
 import pandas as pd
 from PIL import Image
@@ -22,19 +23,77 @@ from utils import (
 
 
 def update_state(canvas_result):
-    to_save = {}
-    to_save["canvas_data"] = canvas_result.json_data
-    to_save["mapping"] = update_mapping(canvas_result.json_data)
+    to_save = {
+        "canvas_data": canvas_result.json_data,
+        "mapping": update_mapping(canvas_result.json_data),
+    }
 
     save_json_with_current_time(to_save)
 
-    st.session_state.mapping = to_save["mapping"]
+    # st.session_state.mapping = to_save["mapping"]
     st.session_state.base_layout = to_save["canvas_data"]
 
     if canvas_result.image_data is not None:
         save_layout_as_image(canvas_result.image_data)
     back_callback()
     st.experimental_rerun()
+
+
+def edit_legend(obj=None):
+    edited = False
+    local_obj = obj or st
+    # save_button = local_obj.form_submit_button("Save Changes")
+
+    col_1, col_2, col_3, col_4 = local_obj.columns([2, 6, 4, 2])
+
+    df = pd.json_normalize(st.session_state.mapping)
+    col_1.subheader("Color")
+    col_2.subheader("Name")
+    col_3.subheader("Planted")
+    to_save = get_latest_json()
+    mapping = to_save["mapping"]
+    geometry = to_save["canvas_data"]["objects"]
+    for row in df.itertuples():
+        # form = local_obj.form(f"form_{row.name}")
+        col_1, col_2, col_3, col_4 = local_obj.columns([2, 6, 4, 2])
+
+        new_color = col_1.color_picker("", value=row.color, key=f"color_{row.name}")
+        new_name = col_2.text_input("", value=row.name, key=f"name_{row.name}")
+        if row.date != "":
+            new_date = col_3.date_input(
+                "", value=datetime.datetime.strptime(row.date, "%Y%m%d"), key=f"date_{row.name}"
+            )
+        else:
+            new_date = ""
+        # if col_4.form_submit_button("Save"):
+        if (
+            (new_color != row.color)
+            or (new_date != "" and new_date.strftime("%Y%m%d") != row.date)
+            or (new_name != row.name)
+        ):
+            local_obj.write("triggered")
+
+            old_index_mapping = next(i for i, m in enumerate(mapping) if m["color"] == row.color)
+            old_index_geomentry = next(i for i, m in enumerate(geometry) if m["fill"] == row.color)
+            mapping[old_index_mapping]["color"] = new_color
+            mapping[old_index_mapping]["name"] = new_name
+            mapping[old_index_mapping]["date"] = new_date.strftime("%Y%m%d")
+            geometry[old_index_geomentry]["fill"] = new_color
+
+            return to_save
+
+    return None
+    # if save_button:
+    # save_json_with_current_time(to_save)
+    # st.session_state.mapping = mapping
+    # st.session_state.base_layout["objects"] = geometry
+    # col_4.info("Change saved.")
+    # edited = True
+    # st.experimental_rerun()
+
+    # # else:
+    # # col_4.warning("No change.")
+    # return edited
 
 
 def edit():
@@ -49,6 +108,8 @@ def edit():
     st.sidebar.button("Back", on_click=back_callback)
     st.button("Back", on_click=back_callback, key="back_edit_1")
 
+    show_legend(st.sidebar)
+
     edit_form = st.form("edit_form")
     col_1, _, col_3 = edit_form.columns([2, 1, 10])
     save_button = col_1.form_submit_button("Save Changes")
@@ -62,24 +123,47 @@ def edit():
             key="edit_canvas",
         )
 
+    # edit_form_2 = st.form("edit_form_2")
+
+    test = edit_legend(edit_form)
+    # st.session_state.canvas_result = canvas_result
+
     if save_button:
         if (canvas_result is None) or (
             canvas_result.json_data["objects"] == base_layout["objects"]
         ):
             col_3.warning("No change.")
 
-        else:
-            update_state(canvas_result)
+        if canvas_result.image_data is not None:
+            save_layout_as_image(canvas_result.image_data)
 
-        save_layout_as_image(canvas_result.image_data)
+        if test is not None:
+            save_json_with_current_time(test)
+            st.session_state.mapping = test["mapping"]
+            st.session_state.base_layout["objects"] = test["canvas_data"]["objects"]
+            save_layout_as_image(canvas_result.image_data)
+            st.experimental_rerun()
+
+        # elif test:
+        #     if canvas_result.image_data is not None:
+        #         save_layout_as_image(canvas_result.image_data)
+        #     back_callback()
+        #     st.experimental_rerun()
+        # else:
+        # update_state(canvas_result)
+
+        # save_layout_as_image(canvas_result.image_data)
+
+    # if edit_legend():
+    # save_layout_as_image(canvas_result.image_data)
+    # st.experimental_rerun()
+    # update_state(canvas_result)
 
     st.button("Back", on_click=back_callback, key="back_edit_2")
 
 
 def show_legend(obj=None):
     local_obj = obj or st
-    make_centered_title("Current plants", 20, local_obj)
-    local_obj.info("Here you can see the plant legend.")
 
     col_1, col_2, col_3 = local_obj.columns([2, 6, 4])
 
@@ -176,6 +260,9 @@ def layout():
         edit()
     else:
         make_centered_title("Garden Layout", 30)
+        make_centered_title("Current plants", 20, legend)
+        legend.info("Here you can see the plant legend.")
+
         st.image("img/current_layout.png")
         show_legend(legend)
 
